@@ -19,7 +19,7 @@ const Navbar = () => {
   return (
     <div className='flex items-center justify-between p-4 z-[100] w-full absolute'>
       <Link to='/'>
-        <h1 className='text-red-600 text-5xl font-bold cursor-pointer'>
+        <h1 className='text-red-600 text-3xl xl:text-5xl font-bold cursor-pointer'>
           NETFLIX
         </h1>
       </Link>
