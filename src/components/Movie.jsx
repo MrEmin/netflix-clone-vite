@@ -1,26 +1,49 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { FaHeart, FaRegHeart } from 'react-icons/fa'
 import { UserAuth } from '../context/AuthContext'
 import { db } from '../firebase'
-import { arrayUnion, doc, updateDoc } from 'firebase/firestore'
+import {
+  arrayRemove,
+  arrayUnion,
+  doc,
+  getDoc,
+  updateDoc,
+} from 'firebase/firestore'
 
 const Movie = ({ movie }) => {
   const [like, setLike] = useState(false)
-  const [saved, setSaved] = useState(false)
   const { user } = UserAuth()
 
-  const movieID = doc(db, 'users', `${user?.email}`)
+  useEffect(() => {
+    const checkSavedShows = async () => {
+      if (user?.email) {
+        const movieDoc = doc(db, 'users', user.email)
+        const movieSnapshot = await getDoc(movieDoc)
+        if (movieSnapshot.exists()) {
+          const savedShows = movieSnapshot.data().savedShows || []
+          const isSaved = savedShows.some((show) => show.id === movie.id)
+          setLike(isSaved)
+        }
+      }
+    }
+
+    checkSavedShows()
+  }, [user, movie.id])
 
   const saveShow = async () => {
     if (user?.email) {
+      const movieID = doc(db, 'users', user.email)
+
       setLike(!like)
-      setSaved(true)
+
       await updateDoc(movieID, {
-        savedShows: arrayUnion({
-          id: movie.id,
-          title: movie.title,
-          img: movie.backdrop_path,
-        }),
+        savedShows: like
+          ? arrayRemove({ id: movie.id })
+          : arrayUnion({
+              id: movie.id,
+              title: movie.title,
+              img: movie.backdrop_path,
+            }),
       })
     } else {
       alert('Please log in to save a movie')
@@ -50,4 +73,5 @@ const Movie = ({ movie }) => {
     </div>
   )
 }
+
 export default Movie
