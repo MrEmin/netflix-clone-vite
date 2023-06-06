@@ -11,12 +11,12 @@ const SavedShows = () => {
   const { user } = UserAuth()
 
   const slideLeft = () => {
-    let slider = document.getElementById('slider')
-    slider.scrollLeft = slider.scrollLeft - 500
+    const slider = document.getElementById('slider')
+    slider.scrollLeft -= 500
   }
   const slideRight = () => {
-    let slider = document.getElementById('slider')
-    slider.scrollLeft = slider.scrollLeft + 500
+    const slider = document.getElementById('slider')
+    slider.scrollLeft += 500
   }
 
   useEffect(() => {
