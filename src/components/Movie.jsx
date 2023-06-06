@@ -2,13 +2,7 @@ import { useEffect, useState } from 'react'
 import { FaHeart, FaRegHeart } from 'react-icons/fa'
 import { UserAuth } from '../context/AuthContext'
 import { db } from '../firebase'
-import {
-  arrayRemove,
-  arrayUnion,
-  doc,
-  getDoc,
-  updateDoc,
-} from 'firebase/firestore'
+import { doc, getDoc, updateDoc } from 'firebase/firestore'
 
 const Movie = ({ movie }) => {
   const [like, setLike] = useState(false)
@@ -32,19 +26,29 @@ const Movie = ({ movie }) => {
 
   const saveShow = async () => {
     if (user?.email) {
-      const movieID = doc(db, 'users', user.email)
+      setLike(!like) // Like durumunu güncelle
 
-      setLike(!like)
+      const movieDoc = doc(db, 'users', user.email)
+      const movieSnapshot = await getDoc(movieDoc)
 
-      await updateDoc(movieID, {
-        savedShows: like
-          ? arrayRemove({ id: movie.id })
-          : arrayUnion({
-              id: movie.id,
-              title: movie.title,
-              img: movie.backdrop_path,
-            }),
-      })
+      if (movieSnapshot.exists()) {
+        const savedShows = movieSnapshot.data().savedShows || []
+
+        if (like) {
+          // Filmi listeden çıkar
+          await updateDoc(movieDoc, {
+            savedShows: savedShows.filter((show) => show.id !== movie.id),
+          })
+        } else {
+          // Filmi listeye ekle
+          await updateDoc(movieDoc, {
+            savedShows: [
+              ...savedShows,
+              { id: movie.id, title: movie.title, img: movie.backdrop_path },
+            ],
+          })
+        }
+      }
     } else {
       alert('Please log in to save a movie')
     }
